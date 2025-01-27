@@ -10,9 +10,11 @@ BLETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 while getopts "s:i:o:" opt;do
 	case $opt in
 		s)
-			SHIFT=$(($OPTARG % 26))
-			if [ $SHIFT -le 0 ];then
-				echo "You can not shift negativ"
+			SHIFT=$OPTARG
+			SHIFT=$(($SHIFT % 26))
+			echo "$SHIFT"
+			if [ $SHIFT -lt 0 ];then
+				echo "Shift value must be positive."
 				exit 1
 			fi
 			;;
@@ -24,21 +26,27 @@ while getopts "s:i:o:" opt;do
 			;;
 		\?)
 			echo "Invalid options"
-			exit1
+			exit 1
 			;;	
 	esac
 done
 		
-if [ ! -f "$INPUTFILE" ] || [ ! -f "$OUTPUTFILE" ]; then
-  echo "First you have to create a files and then forward it."
+if [ ! -f "$INPUTFILE" ]; then
+  echo "Input file that you pass for input argument doesn't exist."
 	exit 1
 fi
+text=$(cat "$INPUTFILE")
 
-while IFS= read -r line; do 
-			START=${SLETTERS:$SHIFT:1}
-			END=${SLETTERS:$(($SHIFT - 1)):1}
-			START2=${BLETTERS:$SHIFT:1}
-			END2=${BLETTERS:$SHIFT:1}
-     	echo "$line" | tr "[a-z]" "[$START-z-$END]" | tr "[A-Z]" "[$START2-Z-$END2]">>"$OUTPUTFILE"
-done < "$INPUTFILE"	
-			
+if [ $SHIFT -eq 0 ]; then
+	echo "$text" > "$OUTPUTFILE"
+	exit 0
+fi
+
+START=${SLETTERS:$SHIFT:1}
+END=${SLETTERS:(SHIFT - 1):1}
+START2=${BLETTERS:$SHIFT:1}
+END2=${BLETTERS:(SHIFT - 1):1}
+
+echo "$text" | tr "a-z" "$(echo $SLETTERS | cut -c$(($SHIFT+1))-)$(echo $SLETTERS | cut -c1-$SHIFT)" \
+             | tr "A-Z" "$(echo $BLETTERS | cut -c$(($SHIFT+1))-)$(echo $BLETTERS | cut -c1-$SHIFT)" \
+             > "$OUTPUTFILE"
