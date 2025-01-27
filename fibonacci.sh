@@ -1,5 +1,15 @@
 #!/bin/bash
 
+if [ -z "$1" ]; then
+	echo "Script don't have input argument, please provide one"
+	exit 1
+fi
+
+if [ "$1" -lt 0 ]; then
+	echo "Argument must be number greater then or equale to 0"
+	exit 1
+fi
+
 fibonnaci_function() {
 	local n=$1
 	if [ $n -le  0 ]; then
